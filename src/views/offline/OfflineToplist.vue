@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ItemCard from '@/components/ItemCard.vue'
+import { generateOfflineComics } from '@/utils/mockData'
+import type { OfflineComic } from '@/types/comic'
 
-// 模拟本地翻阅频次统计数据
-const allItems = Array.from({ length: 25 }, (_, i) => ({
+interface RankedOfflineComic extends OfflineComic {
+  rank: number
+}
+
+// 使用 mockData 工厂生成 25 条带阅读次数的本地高频榜单数据
+const allItems: RankedOfflineComic[] = generateOfflineComics(25).map((comic, i) => ({
+  ...comic,
   id: `offline-rank-${i + 1}`,
-  title: `📖 本地高频阅读作品名称 #${i + 1}`,
+  title: `📖 [高频阅读] ${comic.title.replace(/^📖\s*\[本地扫描\]\s*/, '')}`,
   readCount: 520 - i * 19,
   rank: i + 1,
 }))
@@ -18,34 +25,32 @@ const restItems = computed(() => allItems.slice(3, 25))
   <div class="leaderboard-page">
     <h2 class="page-title">📊 本地个人阅读频次榜 (TOP 25)</h2>
 
-    <!-- 领奖台 -->
     <div class="podium-section">
       <div v-if="topThree[1]" class="podium-item rank-2-wrapper">
         <div class="podium-crown">🥈 NO.2</div>
-        <ItemCard :title="topThree[1].title" :rank="2" size="large" mode="card" />
+        <ItemCard :comic="topThree[1]" :rank="2" size="large" mode="card" />
         <div class="read-count">{{ topThree[1].readCount }} 次阅读</div>
       </div>
 
       <div v-if="topThree[0]" class="podium-item rank-1-wrapper">
         <div class="podium-crown gold">👑 NO.1 最爱本子</div>
-        <ItemCard :title="topThree[0].title" :rank="1" size="top1" mode="card" />
+        <ItemCard :comic="topThree[0]" :rank="1" size="top1" mode="card" />
         <div class="read-count gold-text">{{ topThree[0].readCount }} 次阅读</div>
       </div>
 
       <div v-if="topThree[2]" class="podium-item rank-3-wrapper">
         <div class="podium-crown">🥉 NO.3</div>
-        <ItemCard :title="topThree[2].title" :rank="3" size="large" mode="card" />
+        <ItemCard :comic="topThree[2]" :rank="3" size="large" mode="card" />
         <div class="read-count">{{ topThree[2].readCount }} 次阅读</div>
       </div>
     </div>
 
-    <!-- 列表 -->
     <div class="rest-section">
       <h3 class="section-subtitle">第 4 - 25 名</h3>
       <div class="card-grid">
         <div v-for="item in restItems" :key="item.id" class="grid-item-wrapper">
-          <ItemCard :title="item.title" :rank="item.rank" mode="card" />
-          <div class="sub-read-count">{{ item.readCount }} 次</div>
+          <ItemCard :comic="item" :rank="item.rank" mode="card" />
+          <div class="sub-read-count">{{ item.readCount }} 次阅读</div>
         </div>
       </div>
     </div>
@@ -57,12 +62,16 @@ const restItems = computed(() => allItems.slice(3, 25))
   display: flex;
   flex-direction: column;
   gap: 24px;
+  padding: 20px;
   padding-bottom: 30px;
 }
+
 .page-title {
   font-size: 1.3rem;
   color: #fff;
+  margin: 0;
 }
+
 .podium-section {
   display: flex;
   justify-content: center;
@@ -71,45 +80,54 @@ const restItems = computed(() => allItems.slice(3, 25))
   padding: 20px 0;
   border-bottom: 1px solid #2a2a2a;
 }
+
 .podium-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 170px;
 }
+
 .rank-1-wrapper {
   width: 210px;
   transform: translateY(-10px);
 }
+
 .podium-crown {
   font-size: 0.85rem;
   font-weight: bold;
   color: #aaa;
   margin-bottom: 8px;
 }
+
 .podium-crown.gold {
   color: #ffd700;
   font-size: 1rem;
 }
+
 .read-count {
   margin-top: 8px;
   font-size: 0.85rem;
   color: #888;
 }
+
 .gold-text {
   color: #ffd700;
   font-weight: bold;
 }
+
 .section-subtitle {
   font-size: 0.95rem;
   color: #888;
   margin-bottom: 12px;
 }
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
 }
+
 .sub-read-count {
   font-size: 0.75rem;
   color: #666;

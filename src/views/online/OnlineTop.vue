@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ItemCard from '@/components/ItemCard.vue'
+import { generateOnlineComics } from '@/utils/mockData'
+import type { OnlineComic } from '@/types/comic'
 
-// 模拟官方 TOP 25 数据
-const allItems = Array.from({ length: 24 }, (_, i) => ({
+interface RankedOnlineComic extends OnlineComic {
+  score: number
+  rank: number
+}
+
+// 利用 mockData 生成 25 条带丰富 Tag、Fav 色框和已下载绿标的数据
+const allItems: RankedOnlineComic[] = generateOnlineComics(25).map((comic, i) => ({
+  ...comic,
   id: `online-rank-${i + 1}`,
   title: `🌐 官方全站热度榜单条目 #${i + 1}`,
   score: 99999 - i * 1200,
@@ -18,33 +26,31 @@ const restItems = computed(() => allItems.slice(3, 25))
   <div class="leaderboard-page">
     <h2 class="page-title">🏆 官方全站热度榜 (TOP 25)</h2>
 
-    <!-- 前 3 名领奖台 -->
     <div class="podium-section">
       <div v-if="topThree[1]" class="podium-item rank-2-wrapper">
         <div class="podium-crown">🥈 NO.2</div>
-        <ItemCard :title="topThree[1].title" :rank="2" size="large" mode="card" />
+        <ItemCard :comic="topThree[1]" :rank="2" size="large" mode="card" />
         <div class="rank-score">{{ topThree[1].score }} 热度</div>
       </div>
 
       <div v-if="topThree[0]" class="podium-item rank-1-wrapper">
         <div class="podium-crown gold">👑 NO.1 CHAMPION</div>
-        <ItemCard :title="topThree[0].title" :rank="1" size="top1" mode="card" />
+        <ItemCard :comic="topThree[0]" :rank="1" size="top1" mode="card" />
         <div class="rank-score gold-text">{{ topThree[0].score }} 热度</div>
       </div>
 
       <div v-if="topThree[2]" class="podium-item rank-3-wrapper">
         <div class="podium-crown">🥉 NO.3</div>
-        <ItemCard :title="topThree[2].title" :rank="3" size="large" mode="card" />
+        <ItemCard :comic="topThree[2]" :rank="3" size="large" mode="card" />
         <div class="rank-score">{{ topThree[2].score }} 热度</div>
       </div>
     </div>
 
-    <!-- 第 4 - 25 名列表 -->
     <div class="rest-section">
       <h3 class="section-subtitle">第 4 - 25 名</h3>
       <div class="card-grid">
         <div v-for="item in restItems" :key="item.id" class="grid-item-wrapper">
-          <ItemCard :title="item.title" :rank="item.rank" mode="card" />
+          <ItemCard :comic="item" :rank="item.rank" mode="card" />
           <div class="sub-score">{{ item.score }} 热度</div>
         </div>
       </div>
