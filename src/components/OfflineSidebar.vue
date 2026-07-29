@@ -1,28 +1,40 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// 控制书架菜单的展开/折叠状态
-const isBookshelfOpen = ref(false)
+import { useRouter, useRoute } from 'vue-router'
+import { useUI } from '@/composables/useUI'
+import { bookshelves, addBookshelf, removeBookshelf } from '@/stores/appStore'
 
-// 模拟用户创建的书架列表
-const customBookshelves = ref([
-  { id: 'fav-all', name: '必看精品', count: 12 },
-  { id: 'fav-artist', name: '特定画师合集', count: 45 },
-  { id: 'fav-temp', name: '待分类缓存', count: 8 },
-])
+const router = useRouter()
+const route = useRoute() // 1. 引入 useRoute 用于精准匹配 query.id
+const { modal, toast } = useUI()
+
+// 控制书架菜单的展开/折叠状态
+const isBookshelfOpen = ref(true)
 
 const toggleBookshelf = () => {
   isBookshelfOpen.value = !isBookshelfOpen.value
 }
 
-const createNewBookshelf = () => {
-  // 修改前: const name = prompt('请输入新书架名称：')
-  const name = window.prompt('请输入新书架名称：')
-  if (name) {
-    customBookshelves.value.push({
-      id: `shelf-${Date.now()}`,
-      name,
-      count: 0,
-    })
+// 新建书架
+const createNewBookshelf = async () => {
+  const name = await modal.prompt('请输入新书架名称', '', '创建书架')
+  if (name && name.trim()) {
+    addBookshelf(name.trim())
+    toast.success(`书架「${name}」创建成功！`)
+  }
+}
+
+// 删除书架
+const handleDeleteShelf = async (shelfId: string, shelfName: string) => {
+  const confirmed = await modal.confirm(`确定要删除书架「${shelfName}」吗？`, '删除确认')
+  if (confirmed) {
+    removeBookshelf(shelfId)
+    toast.info(`书架「${shelfName}」已删除`)
+
+    // 2. 核心修正：只有当前正处于被删除的这个书架页面时，才跳回首页
+    if (route.query.id === shelfId) {
+      router.push('/offline/home')
+    }
   }
 }
 </script>
@@ -35,25 +47,36 @@ const createNewBookshelf = () => {
     <router-link to="/offline/maintain">维护</router-link>
     <router-link to="/offline/toplist">排行榜</router-link>
     <router-link to="/offline/history">历史记录</router-link>
-    <!-- 可折叠的书架父级项 -->
+
     <div class="foldable-item">
       <div class="foldable-header" @click="toggleBookshelf">
         <span>书架</span>
         <span class="arrow" :class="{ open: isBookshelfOpen }">❯</span>
       </div>
-      <!-- 折叠展开的子列表 -->
+
       <div v-show="isBookshelfOpen" class="foldable-body">
         <router-link
-          v-for="shelf in customBookshelves"
+          v-for="shelf in bookshelves"
           :key="shelf.id"
           :to="`/offline/bookshelf?id=${shelf.id}`"
           class="sub-nav-item"
+          :class="{ active: route.query.id === shelf.id }"
         >
           <span class="shelf-name">{{ shelf.name }}</span>
-          <span class="shelf-count">{{ shelf.count }}</span>
+
+          <div class="shelf-right-info">
+            <span class="shelf-count">{{ shelf.count || 0 }}</span>
+
+            <span
+              class="delete-btn"
+              title="删除书架"
+              @click.stop.prevent="handleDeleteShelf(shelf.id, shelf.name)"
+            >
+              ✕
+            </span>
+          </div>
         </router-link>
 
-        <!-- 新建书架按钮 -->
         <button class="add-shelf-btn" @click="createNewBookshelf">➕ 新建书架</button>
       </div>
     </div>
@@ -97,16 +120,74 @@ const createNewBookshelf = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
   font-size: 0.85rem !important;
   color: #888 !important;
+  transition: all 0.2s;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+/* 1. 核心修复：彻底清空 Vue Router 默认下发给所有书架的全局大蓝块背景 */
+.sub-nav-item.router-link-active,
+.sub-nav-item.router-link-exact-active {
+  background-color: transparent !important;
+  color: #888 !important;
+}
+
+/* 2. 普通悬浮态 */
+.sub-nav-item:hover {
+  background-color: #242424 !important;
+  color: #fff !important;
+}
+
+/* 3. 只有当前 ID 100% 匹配时，我们手绑定的 .active 才独占高亮 */
+.sub-nav-item.active {
+  background-color: #007acc !important; /* 经典蓝色底块 */
+  color: #ffffff !important; /* 白字 */
+  font-weight: bold;
+}
+
+.shelf-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.shelf-right-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .shelf-count {
   font-size: 0.75rem;
-  background-color: #262626;
+  background-color: rgba(255, 255, 255, 0.15);
   padding: 1px 6px;
   border-radius: 10px;
-  color: #666;
+  color: #ccc;
+}
+
+.delete-btn {
+  font-size: 0.75rem;
+  color: #aaa;
+  padding: 0 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
+}
+
+.sub-nav-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.2);
 }
 
 .add-shelf-btn {
@@ -119,6 +200,7 @@ const createNewBookshelf = () => {
   font-size: 0.8rem;
   text-align: left;
   margin-top: 4px;
+  transition: all 0.2s;
 }
 .add-shelf-btn:hover {
   border-color: #007acc;
