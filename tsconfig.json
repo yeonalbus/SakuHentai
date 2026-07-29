@@ -1,11 +1,22 @@
+//让 TS 识别 @ 别名
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    // 覆盖 node24 预设中无法识别的高版本 lib
+    "lib": ["ESNext"],
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
     }
-  ]
+  }
 }
