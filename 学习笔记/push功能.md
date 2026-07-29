@@ -6,10 +6,9 @@ push会切换界面，然后切换依据是查询index.tx里面的东西
 比如/online/home，
 然后就找到name: 'OnlineHome',
 在调取component: () => import('@/views/online/OnlineHome.vue'),
-
 最终到达组件
 <template>
-  <div>
-    <h1>🌐 在线首页</h1>
-  </div>
+<div>
+<h1>🌐 在线首页</h1>
+</div>
 </template>
