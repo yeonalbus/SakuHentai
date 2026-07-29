@@ -12,7 +12,7 @@
     "noEmit": true,
 
     // 覆盖 node24 预设中无法识别的高版本 lib
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
 
     "baseUrl": ".",
     "paths": {
