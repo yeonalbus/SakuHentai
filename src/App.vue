@@ -1,9 +1,18 @@
+<script setup lang="ts">
+// 在 Vue 3 setup 中，导入组件后即可直接在 template 里当标签使用
+import ModeToggle from '@/components/ModeToggle.vue'
+</script>
+
 <template>
-  <!--搭建应用外壳-->
   <div class="app-container">
     <!-- 左侧导航栏 -->
     <aside class="sidebar">
-      <div class="logo">E-Manager</div>
+      <!-- Logo 区域：包含标题和切换按钮 -->
+      <div class="logo-area">
+        <span class="logo">E-Manager</span>
+        <!-- 直接像 HTML 标签一样调用组件 -->
+        <ModeToggle />
+      </div>
 
       <nav class="nav-menu">
         <div class="nav-group">
@@ -57,20 +66,28 @@ body {
 
 /* 侧边栏样式 */
 .sidebar {
-  width: 220px;
+  width: 240px;
   background-color: #1a1a1a;
   border-right: 1px solid #2a2a2a;
   display: flex;
   flex-direction: column;
   padding: 20px 10px;
 }
-.logo {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #007acc;
-  padding: 0 10px 20px;
+
+/* 让 Logo 标题和按钮在同一行并排显示 */
+.logo-area {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px 20px 5px;
   border-bottom: 1px solid #2a2a2a;
   margin-bottom: 15px;
+}
+
+.logo {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #007acc;
 }
 
 .nav-group {
@@ -98,7 +115,6 @@ body {
   background-color: #2a2a2a;
   color: #fff;
 }
-/* Vue Router 自动追加的当前激活菜单样式 */
 .nav-menu a.router-link-active {
   background-color: #007acc;
   color: #fff;
