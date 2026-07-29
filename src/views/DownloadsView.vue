@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useUI } from '@/composables/useUI'
 
 // 模拟下载任务状态
 const tasks = ref([
@@ -26,9 +27,11 @@ const tasks = ref([
   },
 ])
 
+const { toast } = useUI()
+
 const handleUnlock = (taskId: number) => {
   // 修改前: alert(`触发解封/解锁逻辑，解锁任务 ID: ${taskId}`)
-  window.alert(`触发解封/解锁逻辑，解锁任务 ID: ${taskId}`)
+  toast.error(`触发解封/解锁逻辑，解锁任务 ID: ${taskId}`)
 }
 </script>
 
