@@ -6,6 +6,8 @@ import ModeToggle from '@/components/ModeToggle.vue'
 import OnlineSidebar from '@/components/OnlineSidebar.vue' // 引入两个侧边栏组件
 import OfflineSidebar from '@/components/OfflineSidebar.vue' // 引入两个侧边栏组件
 import TopBar from '@/components/TopBar.vue' // 引入组合好的顶栏
+import GlobalToast from '@/components/common/GlobalToast.vue'
+import GlobalModal from '@/components/common/GlobalModal.vue'
 
 const route = useRoute()
 
@@ -29,6 +31,11 @@ watch(
 </script>
 
 <template>
+  <div class="app-layout">
+    <GlobalToast />
+    <GlobalModal />
+  </div>
+
   <div class="app-container">
     <!-- 左侧导航栏 -->
     <aside class="sidebar">
@@ -63,7 +70,11 @@ watch(
 
       <!-- 页面主体显示区 -->
       <main class="main-content">
-        <router-view></router-view>
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" :key="$route.fullPath" />
+          </keep-alive>
+        </router-view>
       </main>
     </div>
   </div>
