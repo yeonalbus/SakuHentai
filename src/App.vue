@@ -1,15 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { viewMode, toggleViewMode } from '@/stores/viewMode'
 import ModeToggle from '@/components/ModeToggle.vue'
-// 1. 引入两个侧边栏组件
-import OnlineSidebar from '@/components/OnlineSidebar.vue'
-import OfflineSidebar from '@/components/OfflineSidebar.vue'
+import OnlineSidebar from '@/components/OnlineSidebar.vue' // 引入两个侧边栏组件
+import OfflineSidebar from '@/components/OfflineSidebar.vue' // 引入两个侧边栏组件
+import TopBar from '@/components/TopBar.vue' // 引入组合好的顶栏
 
 const route = useRoute()
 
-// 2. 实时计算：如果当前路径以 '/online' 开头，就判定为在线模式
-const isOnlineMode = computed(() => route.path.startsWith('/online'))
+// 1. 用一个 ref 存储当前模式，默认设为 'online'
+const currentMode = ref<'online' | 'offline'>('online')
+
+// 2. 监听路由路径变化，更新模式记忆
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath.startsWith('/online')) {
+      currentMode.value = 'online'
+    } else if (newPath.startsWith('/offline')) {
+      currentMode.value = 'offline'
+    }
+    // 注意：如果是 /downloads 或 /settings，既不是 online 也不是 offline，
+    // currentMode 会保持上一次的值不变！
+  },
+  { immediate: true }, // 页面刚加载时立即执行一次
+)
 </script>
 
 <template>
@@ -21,24 +37,35 @@ const isOnlineMode = computed(() => route.path.startsWith('/online'))
         <ModeToggle />
       </div>
 
+      <!-- 导航菜单 -->
       <nav class="nav-menu">
-        <!-- 3. 用 v-if / v-else 切换对应的组件 -->
-        <OnlineSidebar v-if="isOnlineMode" />
+        <!-- 在线/离线菜单，用 v-if / v-else 切换对应的组件 -->
+        <OnlineSidebar v-if="currentMode === 'online'" />
         <OfflineSidebar v-else />
-
-        <!-- 全局通用的系统菜单保留在底部 -->
+        <!-- 全局通用的系统菜单与历史记录：放在侧边栏底部或独立组里 -->
         <div class="nav-group">
           <span class="group-title">⚙️ 系统</span>
           <router-link to="/downloads">下载列表</router-link>
           <router-link to="/settings">系统设置</router-link>
+          <!-- 临时放在侧边栏底部的视图切换控制块 -->
+          <span class="group-title">🛠️ 临时控制</span>
+          <button class="temp-toggle-btn" @click="toggleViewMode">
+            当前模式：{{ viewMode === 'card' ? '🎴 卡片' : '🪪 名片' }}
+          </button>
         </div>
       </nav>
     </aside>
 
-    <!-- 右侧主体内容显示区域 -->
-    <main class="main-content">
-      <router-view></router-view>
-    </main>
+    <!-- 2. 右侧主体包装层（包含顶栏 + 内容区） -->
+    <div class="right-wrapper">
+      <!-- 顶部操作栏 直接调用整合好的顶栏组件 -->
+      <TopBar />
+
+      <!-- 页面主体显示区 -->
+      <main class="main-content">
+        <router-view></router-view>
+      </main>
+    </div>
   </div>
 </template>
 
@@ -122,7 +149,36 @@ body {
   font-weight: bold;
 }
 
-/* 主区域样式 */
+/* 右侧主体包装层：垂直排列顶栏和内容 */
+.right-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 顶部操作栏 */
+.top-bar {
+  height: 56px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px; /* 控制图标与搜索框之间的间距 */
+}
+
+.top-bar-left {
+  display: flex;
+  gap: 8px;
+}
+
+.search-box {
+  flex: 1; /* 自动拉伸占满剩余空间 */
+}
+
+/* 主内容区（扣除顶栏高度后，内部独立滚动） */
 .main-content {
   flex: 1;
   padding: 24px;
