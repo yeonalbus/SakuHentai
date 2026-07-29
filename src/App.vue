@@ -1,31 +1,32 @@
 <script setup lang="ts">
-// 在 Vue 3 setup 中，导入组件后即可直接在 template 里当标签使用
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import ModeToggle from '@/components/ModeToggle.vue'
+// 1. 引入两个侧边栏组件
+import OnlineSidebar from '@/components/OnlineSidebar.vue'
+import OfflineSidebar from '@/components/OfflineSidebar.vue'
+
+const route = useRoute()
+
+// 2. 实时计算：如果当前路径以 '/online' 开头，就判定为在线模式
+const isOnlineMode = computed(() => route.path.startsWith('/online'))
 </script>
 
 <template>
   <div class="app-container">
     <!-- 左侧导航栏 -->
     <aside class="sidebar">
-      <!-- Logo 区域：包含标题和切换按钮 -->
       <div class="logo-area">
         <span class="logo">E-Manager</span>
-        <!-- 直接像 HTML 标签一样调用组件 -->
         <ModeToggle />
       </div>
 
       <nav class="nav-menu">
-        <div class="nav-group">
-          <span class="group-title">🌐 在线模式</span>
-          <router-link to="/online/home">首页</router-link>
-          <router-link to="/online/favorites">我的收藏</router-link>
-        </div>
+        <!-- 3. 用 v-if / v-else 切换对应的组件 -->
+        <OnlineSidebar v-if="isOnlineMode" />
+        <OfflineSidebar v-else />
 
-        <div class="nav-group">
-          <span class="group-title">📚 离线书库</span>
-          <router-link to="/offline/home">离线首页</router-link>
-        </div>
-
+        <!-- 全局通用的系统菜单保留在底部 -->
         <div class="nav-group">
           <span class="group-title">⚙️ 系统</span>
           <router-link to="/downloads">下载列表</router-link>

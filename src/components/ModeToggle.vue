@@ -27,6 +27,7 @@ const toggleMode = () => {
 
   // 切换模式的同时，自动跳转到对应的首页
   if (isOnline.value) {
+    //router.push 是 Vue Router 提供的一个方法，意思是“用代码控制页面进行跳转”
     router.push('/online/home')
   } else {
     router.push('/offline/home')
@@ -49,9 +50,12 @@ const toggleMode = () => {
     <span class="label">{{ isOnline ? '在线' : '离线' }}</span>
   </button>
 </template>
-<!--<style scoped>:加上 scoped 后，Vue 会自动为组件里的元素生成独一无二的随机属性标号，确保这里的 .mode-toggle-btn 样式绝对不会影响到其他页面的按钮。-->
+
 <style scoped>
-/* scoped 确保 CSS 样式只作用于当前组件，不会污染外部 */
+/*
+scoped 确保 CSS 样式只作用于当前组件，不会污染外部
+<style scoped>:加上 scoped 后，Vue 会自动为组件里的元素生成独一无二的随机属性标号，确保这里的 .mode-toggle-btn 样式绝对不会影响到其他页面的按钮
+*/
 .mode-toggle-btn {
   background-color: #242424;
   border: 1px solid #3a3a3a;
