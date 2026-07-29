@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import GridContainer from '@/components/GridContainer.vue'
 
 const currentPage = ref(1)
-const totalPages = ref(15)
+const totalPages = ref(2)
 
 const items = ref(
   Array.from({ length: 24 }, (_, i) => ({
-    id: `offline-home-${i + 1}`,
-    title: `📁 本地已下载作品资源 #${i + 1}`,
+    id: `offline-up-${i + 1}`,
+    title: `🔄 本地检测到有新话/增补的作品 #${i + 1}`,
   })),
 )
 
